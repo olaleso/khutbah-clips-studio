@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#103b39" />
+  <title>Khutbah Clips Studio — Islamic video production</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+<div id="loginScreen" class="login-wrap hidden">
+  <div class="login-box">
+    <div class="login-emblem">✦</div>
+    <div class="eyebrow">SECURE WORKSPACE</div>
+    <h1>Welcome to Khutbah Clips Studio</h1>
+    <p>Turn complete Islamic lectures into meaningful short-form reminders.</p>
+    <form id="loginForm" class="stack">
+      <label for="adminKey">Administrator access token</label>
+      <input id="adminKey" type="password" autocomplete="off" placeholder="Enter the secret configured in Cloudflare" required />
+      <button class="btn primary" type="submit">Unlock workspace →</button>
+    </form>
+    <small id="loginError" class="danger-text"></small>
+  </div>
+</div>
+<div id="appShell" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-symbol">✦</div><div><strong>KHUTBAH</strong><small>CLIPS STUDIO</small></div></div>
+    <div class="sidebar-section">WORKSPACE</div>
+    <nav id="nav">
+      <button data-view="dashboard" class="nav-item active"><span class="nav-glyph">▦</span> Overview</button>
+      <button data-view="library" class="nav-item"><span class="nav-glyph">▤</span> Lecture library</button>
+      <button data-view="studio" class="nav-item"><span class="nav-glyph">✂</span> Clip studio</button>
+      <button data-view="review" class="nav-item"><span class="nav-glyph">✓</span> Approval queue <span class="nav-count" id="pendingNav">0</span></button>
+      <button data-view="publishing" class="nav-item"><span class="nav-glyph">↗</span> Publishing</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-safety">◈ &nbsp; Preserve the speaker’s meaning.<br><span>Every clip requires human approval.</span></div>
+      <button id="logoutBtn" class="nav-item signout">↪ &nbsp; Sign out</button>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div class="breadcrumb">MEDIA PRODUCTION <span> / </span> <span id="breadcrumbCurrent">OVERVIEW</span></div><div class="topbar-right"><span class="status-dot"></span> Release 1.2 · On-demand transcription <span class="avatar">KS</span></div></header>
+    <div class="page-wrap">
+      <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+      <section class="view" id="view-dashboard">
+        <div class="page-heading"><div><div class="eyebrow">ASSALAMU ALAIKUM · PRODUCTION WORKSPACE</div><h1>Make every reminder count.</h1><p>Transform full-length lectures into accurate, engaging short videos.</p></div><button class="btn primary" id="newFromDash">＋ New lecture</button></div>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Total lectures</span><strong id="statLectures">—</strong><small>Available in your library</small></div>
+          <div class="stat-card"><span>Suggested clips</span><strong id="statClips">—</strong><small>Across all lectures</small></div>
+          <div class="stat-card"><span>Awaiting review</span><strong id="statReview">—</strong><small>Needs Islamic content checks</small></div>
+          <div class="stat-card"><span>Approved clips</span><strong id="statApproved">—</strong><small>Ready for MP4 rendering</small></div>
+        </div>
+        <div class="dash-grid">
+          <article class="panel welcome-panel"><div class="eyebrow gold">THE PRODUCTION JOURNEY</div><h2>From an hour of guidance<br>to a moment of impact.</h2><p>Start with a video you own or are authorised to republish. Upload your lecture, then choose Start transcription for the lecture you want to process; review every excerpt before publishing.</p><button class="btn light" id="newFromWelcome">Start a new lecture ↗</button><div class="decorative-moon">☾</div></article>
+          <article class="panel steps-panel"><div class="section-heading"><h3>Production flow</h3><span class="soft-badge">Release 1.2</span></div><div class="step"><span>01</span><div><strong>Upload a lecture</strong><small>Resumable-style multipart transfer to R2</small></div></div><div class="step"><span>02</span><div><strong>User-controlled transcription</strong><small>Speech-to-text with timestamped captions</small></div></div><div class="step"><span>03</span><div><strong>AI-assisted highlight suggestions</strong><small>45–60 second excerpts after transcription</small></div></div><div class="step"><span>04</span><div><strong>Review & export</strong><small>Human approval and FFmpeg edit plans</small></div></div></article>
+        </div>
+        <article class="panel list-panel"><div class="section-heading"><h3>Recent lectures</h3><button class="link-button" data-view="library">View library →</button></div><div id="recentLectures" class="table-region"><div class="empty-state">No lectures yet. Create your first project.</div></div></article>
+      </section>
+      <section class="view hidden" id="view-library">
+        <div class="page-heading"><div><div class="eyebrow">SOURCE MEDIA</div><h1>Lecture library</h1><p>Organise your khutbahs, reminders and Islamic lessons.</p></div><button class="btn primary" id="newFromLibrary">＋ Add lecture</button></div>
+        <div class="panel list-panel"><div class="section-heading"><h3>Uploaded and registered lectures</h3><span class="soft-badge">Your collection</span></div><div id="libraryRows"></div></div>
+      </section>
+      <section class="view hidden" id="view-studio">
+        <div class="page-heading"><div><div class="eyebrow">EDITING WORKSPACE</div><h1>Clip studio</h1><p>Upload a lecture, then choose when to start transcription and highlight selection.</p></div><button class="btn secondary" id="studioNew">＋ New lecture</button></div>
+        <div class="panel select-panel"><label for="lectureSelect">Selected lecture</label><select id="lectureSelect"><option value="">Choose a lecture…</option></select><span class="soft-badge" id="lectureState">Select a project</span></div>
+        <div id="studioContent" class="hidden">
+          <div class="studio-grid">
+            <article class="panel media-panel"><div class="section-heading"><h3>Source video</h3><span class="soft-badge">Original content</span></div><div class="video-stage"><video id="videoPreview" controls preload="metadata" playsinline></video><div id="videoEmpty" class="video-empty">Video preview appears after upload</div></div><div class="source-info" id="sourceInfo"></div><label class="file-picker" id="existingUploadLabel" for="existingLectureFile">⇧ &nbsp; Upload original video<input id="existingLectureFile" type="file" accept="video/*,audio/*" hidden></label><div class="micro-note" id="existingUploadStatus"></div></article>
+            <article class="panel import-panel"><div class="section-heading"><h3>Automatic transcription</h3><span class="soft-badge" id="transcriptState">Waiting for video</span></div><p class="hint">Upload an original lecture, then click Start transcription when you are ready. Other lectures will remain untouched. The processor generates timed captions and highlights for the lecture you select.</p><div id="autoStatus" class="automation-message" role="status" aria-live="polite">Upload a lecture, then choose Start transcription.</div><div id="autoProgressPanel" class="auto-progress-panel hidden" aria-label="Transcription progress"><div class="auto-progress-top"><span id="autoProgressPercent">0%</span><span id="autoProgressTimeline">00:00:00 / 00:00:00</span></div><div class="auto-progress-track" role="progressbar" aria-label="Audio timeline transcribed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="autoProgressBar"></div></div><div class="auto-progress-footer"><span id="autoProgressBlocks">Preparing audio timeline…</span><span id="autoProgressSegments">0 subtitle segments</span></div></div><div class="automation-actions"><button class="btn primary hidden" id="startTranscription" type="button">▶ Start transcription</button><button class="btn secondary hidden" id="stopTranscription" type="button">■ Stop / reset</button></div><div class="micro-note" id="transcriptInfo"></div><details class="manual-fallback"><summary>Advanced: manually import or correct a timed transcript</summary><p class="hint">Use this only as a fallback when automatic transcription cannot interpret a recording. Replacing a transcript removes prior clip suggestions and approvals.</p><label class="file-picker" for="subtitleFile">⇧ &nbsp; Choose .srt / .vtt file<input id="subtitleFile" type="file" accept=".srt,.vtt,.txt" hidden></label><textarea id="transcriptInput" rows="8" placeholder="1&#10;00:00:01,000 --> 00:00:05,000&#10;My brothers and sisters, remember...&#10;&#10;2&#10;00:00:05,000 --> 00:00:10,000&#10;..." spellcheck="false"></textarea><button class="btn secondary full" id="importTranscript">Save timed transcript</button></details></article>
+          </div>
+          <article class="panel highlight-panel"><div class="section-heading"><div><h3>Automatically selected highlights</h3><p class="hint">After you start transcription, 45–60 second candidate clips appear here. Every excerpt still needs human approval.</p></div><details class="manual-fallback"><summary>Advanced: regenerate suggestions</summary><button class="btn secondary" id="generateHighlights">Regenerate highlights</button></details></div><div id="highlightMode" class="micro-note"></div><div id="studioClips" class="clips-grid"><div class="empty-state">Start transcription for the selected lecture to generate highlights.</div></div></article>
+        </div>
+        <div id="studioNothing" class="panel empty-big"><span>✂</span><h2>Your editing workspace is ready.</h2><p>Select a lecture above or create a new one to begin.</p></div>
+      </section>
+      <section class="view hidden" id="view-review">
+        <div class="page-heading"><div><div class="eyebrow">EDITORIAL QUALITY CONTROL</div><h1>Approval queue</h1><p>Every Islamic reminder needs context, source and caption verification before approval.</p></div><button class="btn secondary" id="exportPlans">↓ Download approved edit plans</button></div>
+        <div id="reviewRows" class="review-list"><div class="empty-state panel">No clips awaiting review yet.</div></div>
+      </section>
+      <section class="view hidden" id="view-publishing">
+        <div class="page-heading"><div><div class="eyebrow">DISTRIBUTION WORKFLOW</div><h1>Publishing centre</h1><p>Connections and scheduling will be enabled in Release 2 after the editor is tested.</p></div></div>
+        <div class="panel publishing-panel"><h2>One reminder. Four destinations.</h2><div class="reel-branding"><div><h3>Masjid logo for exports</h3><p class="hint">Add an official PNG, JPEG or WebP logo, up to 2 MB. It appears in the top-right corner of new MP4 exports. Existing videos will not be changed until re-rendered.</p><label class="file-picker" for="masjidLogoFile">⇧ Upload mosque logo<input id="masjidLogoFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><div id="masjidLogoStatus" class="micro-note"></div></div><img id="masjidLogoPreview" class="reel-logo-preview hidden" alt="Uploaded mosque logo"></div><p>Platform APIs require account authorisation and publishing permissions. Automatic posting is intentionally disabled in this release.</p><div class="platform-grid"><div>◎<strong>Instagram Reels</strong><span>Not connected</span></div><div>f<strong>Facebook Reels</strong><span>Not connected</span></div><div>▶<strong>YouTube Shorts</strong><span>Not connected</span></div><div>♪<strong>TikTok</strong><span>Not connected</span></div></div><div class="info-banner">✓ &nbsp; Release 1.4 creates downloadable, captioned 1080 × 1920 MP4s. Social account publishing is not yet connected — you can upload these files manually.</div><div class="reel-library"><div class="section-heading"><h3>Download your finished Reels</h3><span class="soft-badge" id="reelReadyCount">0 MP4 ready</span></div><p class="hint">First approve clips in Approval queue. Then click Generate MP4 Reel, or queue all your approved clips here.</p><button class="btn primary" id="renderAllApproved" type="button">▶ Render all approved clips</button><div id="reelDownloads" class="reel-downloads"></div></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="modalBackdrop" class="modal-backdrop hidden" role="presentation"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="section-heading"><div><div class="eyebrow">NEW PRODUCTION</div><h2 id="modalTitle">Add a lecture</h2></div><button class="modal-close" id="closeModal" aria-label="Close dialog">×</button></div><form id="lectureForm" class="stack"><label>Lecture title<input id="lectureTitle" placeholder="e.g. Preparing for the Hereafter" maxlength="170" required></label><div class="two-fields"><label>Speaker<input id="lectureSpeaker" placeholder="Speaker's name" maxlength="120"></label><label>Content type<select id="lectureType"><option>Khutbah</option><option>Islamic lecture</option><option>Reminder</option><option>Islamic Studies</option></select></label></div><label>YouTube link <span class="optional">(optional, for source attribution)</span><input id="lectureYouTube" type="url" placeholder="https://www.youtube.com/watch?v=..."></label><label>Original video file <span class="optional">(optional now, can be added later)</span><input id="lectureFile" type="file" accept="video/*,audio/*"></label><label class="checkline"><input id="rightsConfirm" type="checkbox" required><span>I own this material or have permission to edit and republish it.</span></label><div id="uploadStatus" class="micro-note"></div><div class="progress hidden" id="uploadProgressOuter"><div id="uploadProgress"></div></div><button id="createLectureBtn" class="btn primary full" type="submit">Create lecture</button></form></div></div>
+</body>
+</html>

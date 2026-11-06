@@ -1,0 +1,32 @@
+{
+	"name": "khutbah-clips-studio",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-11-06",
+	"compatibility_flags": [
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		// The path to the directory containing the `index.html` file to be served at `/`
+		"directory": "./public"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"r2_buckets": [
+		{
+			"bucket_name": "khutbah-source-videos",
+			"binding": "khutbah_source_videos"
+		},
+		{
+			"bucket_name": "khutbah-reels-output",
+			"binding": "khutbah_reels_output"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "khutbah_clips_db",
+			"database_name": "khutbah-clips-db",
+			"database_id": "402ef42f-42f7-4405-8f23-da3103ea2074"
+		}
+	]
+}
